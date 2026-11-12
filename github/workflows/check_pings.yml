@@ -1,0 +1,41 @@
+name: Проверка пингов после запроса оплаты
+
+on:
+  schedule:
+    # Каждый час в 15 минут. Время указано в UTC; Москва = UTC+3,
+    # но так как запуск ежечасный, на минуты сдвиг не влияет.
+    - cron: "15 * * * *"
+  workflow_dispatch:        # позволяет запустить вручную кнопкой
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45     # с огромным запасом: скрипту нужно 10-18 минут
+
+    steps:
+      - name: Забрать код
+        uses: actions/checkout@v4
+
+      - name: Поставить Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Запустить проверку
+        env:
+          CRM_TOKEN: ${{ secrets.CRM_TOKEN }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          DEPARTMENT_IDS: "122"
+          PING_FORCE_SEND: "1"    # присылать отчёт даже когда нарушений нет
+        run: python check_pings.py
+
+      - name: Сообщить в Telegram, если запуск упал
+        if: failure()
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\":${TG_CHAT_ID},\"text\":\"Проверка пингов не выполнилась. Журнал: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\"}"

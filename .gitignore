@@ -1,0 +1,35 @@
+# --- СЕКРЕТЫ. Никогда не коммитить ---
+.env
+*.token
+*secret*
+
+# --- Переписка клиентов и выгрузки CRM (персональные данные, сотни мегабайт) ---
+cache/
+data/
+dialogs_by_id/
+handover_*.json
+*.json.gz
+
+# --- Зарплаты сотрудников ---
+*.xlsx
+*.xls
+
+# --- Отчёты с цифрами компании ---
+report_*.txt
+last_report.txt
+sent_*.flag
+sent_messages.log
+ИТОГИ_*.md
+
+# --- Логи и временные файлы прогонов ---
+*.log
+*.err
+*.out
+_*_out.txt
+_win_*.txt
+__pycache__/
+*.pyc
+
+# --- Архивы ---
+backup_*/
+backup_*.zip
